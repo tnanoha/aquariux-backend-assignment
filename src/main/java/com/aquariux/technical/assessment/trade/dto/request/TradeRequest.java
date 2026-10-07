@@ -9,4 +9,6 @@ public class TradeRequest {
     private TradeType tradeType;
     
     // TODO: What information do you need to execute a trade?
+    private String pairSymbol;
+    private Double amount;
 }

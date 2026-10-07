@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class TradeResponse {
-    // TODO: What should you return after a trade is executed?
+    //TODO create unique transaction id (like UUID) giving each transaction a unique id to track.
+    private String transactionId;
 }
