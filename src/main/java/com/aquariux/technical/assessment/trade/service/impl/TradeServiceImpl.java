@@ -16,6 +16,7 @@ import com.aquariux.technical.assessment.trade.mapper.UserMapper;
 import com.aquariux.technical.assessment.trade.mapper.UserWalletMapper;
 import com.aquariux.technical.assessment.trade.service.TradeServiceInterface;
 import lombok.RequiredArgsConstructor;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +57,10 @@ public class TradeServiceImpl implements TradeServiceInterface {
 
         List<UserWalletDto> walletList = userWalletMapper.findByUserId(tradeRequest.getUserId());
 
-        foreach(UserWalletDto u in walletList){
+        for(UserWalletDto u : walletList){
             if(u.getSymbol() == symbolDto.getBaseSymbol()){
-                if(u.getBalance() < tradeRequest.getAmount()){
+                BigDecimal convert = BigDecimal.valueOf(tradeRequest.getAmount());
+                if(u.getBalance().compareTo(convert) < 0){
                     throw new UnsupportedOperationException("Insufficient funds.");
                 }
             }
@@ -68,29 +70,30 @@ public class TradeServiceImpl implements TradeServiceInterface {
         List<CryptoPrice> priceList =  crpytoPriceMapper.findLatestPrices();
         BigDecimal price = null;
 
-        foreach(CryptoPrice p in priceList){
+        for(CryptoPrice p : priceList){
             if(p.getCryptoPairId() == symbolDto.getCryptoPairId()){
-                if(tradeRequest.getTradeType().equal(TradeType.BUY)){
+                if(tradeRequest.getTradeType() == TradeType.BUY){
                     price = p.getBidPrice();
                 }
 
-                else if(tradeRequest.getTradeType().equal(TradeType.SELL)){
+                else if(tradeRequest.getTradeType() == TradeType.SELL){
                     price = p.getAskPrice();
                 }
             }
         }
 
-        if(price === null){
+        if(price == null){
             throw new UnsupportedOperationException("Invalid Symbol.");
         }
 
+        BigDecimal convert = BigDecimal.valueOf(tradeRequest.getAmount());
         Trade trade = new Trade();
-        trade.setUserId(tradeRequest.getUserId());
-        trade.setCryptoPairId(tradeRequest.getPairSymbol());
-        trade.setTradeType(tradeRequest.getTradeType());
-        trade.setQuantity(tradeRequest.getAmount());
+        trade.setUserId(user.getId());
+        trade.setCryptoPairId(symbolDto.getCryptoPairId());
+        trade.setTradeType(tradeRequest.getTradeType().toString());
+        trade.setQuantity(convert);
         trade.setPrice(price);
-        trade.setTotalAmount(tradeRequest.getAmount() * price);
+        trade.setTotalAmount(convert.multiply(price));
         trade.setTradeTime(LocalDateTime.now());
 
         //Step 3 insert Trade entity
@@ -99,7 +102,7 @@ public class TradeServiceImpl implements TradeServiceInterface {
         //Step 4 create response dto
         TradeResponse response = new TradeResponse();
         //set id for now to simulate it having a unique id
-        response.setTransactionId = trade.getId();
+        response.setTransactionId(trade.getId().toString());
 
         return response;
     }

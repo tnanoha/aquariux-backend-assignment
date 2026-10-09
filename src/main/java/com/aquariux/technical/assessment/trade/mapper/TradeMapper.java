@@ -1,7 +1,7 @@
 package com.aquariux.technical.assessment.trade.mapper;
 
 import com.aquariux.technical.assessment.trade.entity.Trade;
-import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface TradeMapper {
